@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="st.teamcataly.turistademanila.placedetails.PlaceDetailsActivity"/>
+    </data>
+
+    <android.support.design.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        tools:context="xyz.newprojects.touristroute.placedetails.PlaceDetailsActivity">
+        <!-- Main Content -->
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/material_baseline_grid_8.5x"
+            tools:context="xyz.newprojects.touristroute.placedetails.PlaceDetailsActivity"/>
+
+        <!-- Bottom Sheet Content -->
+        <RelativeLayout
+            android:id="@+id/bottomSheetLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:padding="@dimen/activity_vertical_margin"
+            app:behavior_hideable="false"
+            app:behavior_peekHeight="@dimen/material_baseline_grid_8.5x"
+            app:layout_behavior="@string/bottom_sheet_behavior">
+            <!--app:behavior_peekHeight="@dimen/material_baseline_grid_8.5x"-->
+
+            <TextView
+                android:id="@+id/bottomSheetHeading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@{vm.poi.getName()}"
+                android:textAppearance="@android:style/TextAppearance.Large"
+                tools:text="Place Name"/>
+
+            <RatingBar
+                android:id="@+id/rating"
+                style="@style/Base.Widget.AppCompat.RatingBar.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/bottomSheetHeading"
+                android:isIndicator="true"
+                android:max="5"
+                android:rating="@{vm.poi.getRating()}"
+                tools:rating="4.5"/>
+
+            <TextView
+                style="?android:listSeparatorTextViewStyle"
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:layout_below="@+id/rating"/>
+
+            <TextView
+                android:id="@+id/address"
+                style="@style/TextAppearance.AppCompat.Body1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/rating"
+                android:layout_marginTop="@dimen/activity_horizontal_margin"
+                android:text="@{vm.poi.getFormattedAddress()}"/>
+
+            <GridView
+                android:id="@+id/image_grid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/address"
+                android:layout_marginTop="@dimen/activity_horizontal_margin"
+                android:numColumns="3"/>
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/rating_pager"
+                android:background="@color/material_color_grey_100"
+                android:layout_below="@+id/image_grid"
+                android:layout_width="match_parent"
+                android:layout_marginTop="@dimen/activity_horizontal_margin"
+                android:layout_height="150dp">
+
+            </android.support.v4.view.ViewPager>
+
+        </RelativeLayout>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/addToItinerary"
+            android:onClick="@{() -> vm.onAddToItineraryClicked(vm.poi)}"
+            android:src="@drawable/ic_bookmark_border_24dp"
+            app:layout_anchor="@id/bottomSheetLayout"
+            android:layout_marginRight="8dp"
+            app:layout_anchorGravity="end"
+            android:layout_width="@dimen/material_button_fab_size"
+            android:layout_height="@dimen/material_button_fab_size"/>
+
+    </android.support.design.widget.CoordinatorLayout>
+</layout>
+
