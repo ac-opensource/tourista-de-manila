@@ -25,80 +25,88 @@
             tools:context="xyz.newprojects.touristroute.placedetails.PlaceDetailsActivity"/>
 
         <!-- Bottom Sheet Content -->
-        <RelativeLayout
-            android:id="@+id/bottomSheetLayout"
+        <android.support.v4.widget.NestedScrollView
+            android:id="@+id/bottom_sheet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipToPadding="true"
             android:background="@android:color/white"
-            android:padding="@dimen/activity_vertical_margin"
             app:behavior_hideable="false"
             app:behavior_peekHeight="@dimen/material_baseline_grid_8.5x"
             app:layout_behavior="@string/bottom_sheet_behavior">
-            <!--app:behavior_peekHeight="@dimen/material_baseline_grid_8.5x"-->
 
-            <TextView
-                android:id="@+id/bottomSheetHeading"
+            <RelativeLayout
+                android:id="@+id/bottomSheetLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@{vm.poi.getName()}"
-                android:textAppearance="@android:style/TextAppearance.Large"
-                tools:text="Place Name"/>
+                android:background="@android:color/white"
+                android:padding="@dimen/activity_vertical_margin">
+                <!--app:behavior_peekHeight="@dimen/material_baseline_grid_8.5x"-->
 
-            <RatingBar
-                android:id="@+id/rating"
-                style="@style/Base.Widget.AppCompat.RatingBar.Small"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/bottomSheetHeading"
-                android:isIndicator="true"
-                android:max="5"
-                android:rating="@{vm.poi.getRating()}"
-                tools:rating="4.5"/>
+                <TextView
+                    android:id="@+id/bottomSheetHeading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@{vm.poi.getName()}"
+                    android:textAppearance="@android:style/TextAppearance.Large"
+                    tools:text="Place Name"/>
 
-            <TextView
-                style="?android:listSeparatorTextViewStyle"
-                android:layout_width="match_parent"
-                android:layout_height="10dp"
-                android:layout_below="@+id/rating"/>
+                <RatingBar
+                    android:id="@+id/rating"
+                    style="@style/Base.Widget.AppCompat.RatingBar.Small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/bottomSheetHeading"
+                    android:isIndicator="true"
+                    android:max="5"
+                    android:rating="@{vm.poi.getRating()}"
+                    tools:rating="4.5"/>
 
-            <TextView
-                android:id="@+id/address"
-                style="@style/TextAppearance.AppCompat.Body1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/rating"
-                android:layout_marginTop="@dimen/activity_horizontal_margin"
-                android:text="@{vm.poi.getFormattedAddress()}"/>
+                <TextView
+                    style="?android:listSeparatorTextViewStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    android:layout_below="@+id/rating"/>
 
-            <GridView
-                android:id="@+id/image_grid"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/address"
-                android:layout_marginTop="@dimen/activity_horizontal_margin"
-                android:numColumns="3"/>
+                <TextView
+                    android:id="@+id/address"
+                    style="@style/TextAppearance.AppCompat.Body1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/rating"
+                    android:layout_marginTop="@dimen/activity_horizontal_margin"
+                    android:text="@{vm.poi.getFormattedAddress()}"/>
 
-            <android.support.v4.view.ViewPager
-                android:id="@+id/rating_pager"
-                android:background="@color/material_color_grey_100"
-                android:layout_below="@+id/image_grid"
-                android:layout_width="match_parent"
-                android:layout_marginTop="@dimen/activity_horizontal_margin"
-                android:layout_height="150dp">
+                <GridView
+                    android:id="@+id/image_grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/address"
+                    android:layout_marginTop="@dimen/activity_horizontal_margin"
+                    android:numColumns="3"/>
 
-            </android.support.v4.view.ViewPager>
+                <android.support.v4.view.ViewPager
+                    android:id="@+id/rating_pager"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:layout_below="@+id/image_grid"
+                    android:layout_marginTop="@dimen/activity_horizontal_margin"
+                    android:background="@color/material_color_grey_100">
 
-        </RelativeLayout>
+                </android.support.v4.view.ViewPager>
+
+            </RelativeLayout>
+        </android.support.v4.widget.NestedScrollView>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/addToItinerary"
+            android:layout_width="@dimen/material_button_fab_size"
+            android:layout_height="@dimen/material_button_fab_size"
+            android:layout_marginRight="8dp"
             android:onClick="@{() -> vm.onAddToItineraryClicked(vm.poi)}"
             android:src="@drawable/ic_bookmark_border_24dp"
             app:layout_anchor="@id/bottomSheetLayout"
-            android:layout_marginRight="8dp"
-            app:layout_anchorGravity="end"
-            android:layout_width="@dimen/material_button_fab_size"
-            android:layout_height="@dimen/material_button_fab_size"/>
+            app:layout_anchorGravity="end"/>
 
     </android.support.design.widget.CoordinatorLayout>
 </layout>

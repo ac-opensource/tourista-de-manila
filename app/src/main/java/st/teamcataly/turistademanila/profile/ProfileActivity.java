@@ -4,17 +4,26 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.androidhuman.rxfirebase2.database.RxFirebaseDatabase;
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
+
+import pl.aprilapps.easyphotopicker.DefaultCallback;
+import pl.aprilapps.easyphotopicker.EasyImage;
 import st.teamcataly.turistademanila.R;
 import st.teamcataly.turistademanila.api.FirebaseApi;
 import st.teamcataly.turistademanila.data.UserProfile;
@@ -25,6 +34,8 @@ public class ProfileActivity extends AppCompatActivity {
     ProfileActivityBinding profileActivityBinding;
     private DatabaseReference myProfile;
     private UserProfile userProfile;
+    private String downloadUrl;
+    private ImageView mIvProfileImage;
 
     public static void start(Context context) {
         Intent starter = new Intent(context, ProfileActivity.class);
@@ -36,6 +47,7 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         profileActivityBinding = DataBindingUtil.setContentView(this, R.layout.profile_activity);
         profileActivityBinding.setVm(this);
+        mIvProfileImage = profileActivityBinding.profileImage;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         myProfile = FirebaseApi.getInstance().getDatabase().getReference("user_profile").child(FirebaseApi.getUser().getUid());
         Glide.with(this).load(R.drawable.busy).centerCrop().into(profileActivityBinding.banner);
@@ -52,15 +64,6 @@ public class ProfileActivity extends AppCompatActivity {
                                 .build();
                     }
                     return userProfile;
-                })
-                .map(userProfile -> {
-                    if (TextUtils.isEmpty(userProfile.profileUri)) {
-                        return new UserProfile.Builder(userProfile)
-                                .profileUri("http://industribune.net/wp-content/uploads/2015/02/industribune-default-no-profile-pic.jpg")
-                                .build();
-                    } else {
-                        return userProfile;
-                    }
                 })
                 .subscribe(userProfile -> {
                     this.userProfile = userProfile;
@@ -140,5 +143,39 @@ public class ProfileActivity extends AppCompatActivity {
         });
         //now that the dialog is set up, it's time to show it
         dialog.show();
+    }
+
+    public void onProfileImageClicked() {
+        EasyImage.openChooserWithGallery(this, "Upload profile picture", 1);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        EasyImage.handleActivityResult(requestCode, resultCode, data, this, new DefaultCallback() {
+            @Override
+            public void onImagePickerError(Exception e, EasyImage.ImageSource source, int type) {
+                //Some error handling
+            }
+
+            @Override
+            public void onImagePicked(File file, EasyImage.ImageSource imageSource, int type) {
+                Uri uri = Uri.fromFile(file);
+                StorageReference riversRef = FirebaseStorage
+                        .getInstance()
+                        .getReference()
+                        .child("images/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/profile.jpg");
+                riversRef.putFile(uri)
+                        .addOnSuccessListener(taskSnapshot -> {
+                            // Get a URL to the uploaded content
+                            downloadUrl = taskSnapshot.getDownloadUrl().toString();
+                            myProfile.child("profileUri").setValue(downloadUrl);
+                            Glide.with(ProfileActivity.this).load(downloadUrl).into(mIvProfileImage);
+                        })
+                        .addOnFailureListener(exception -> {
+
+                        });
+            }
+        });
     }
 }

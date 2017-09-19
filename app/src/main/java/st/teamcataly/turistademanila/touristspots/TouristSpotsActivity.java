@@ -10,18 +10,27 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.adroitandroid.chipcloud.ChipCloud;
+import com.androidhuman.rxfirebase2.database.RxFirebaseDatabase;
+import com.crashlytics.android.Crashlytics;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import st.teamcataly.turistademanila.R;
+import st.teamcataly.turistademanila.api.FirebaseApi;
 import st.teamcataly.turistademanila.api.MapsApi;
 import st.teamcataly.turistademanila.api.MapsService;
 import st.teamcataly.turistademanila.customview.SpaceItemDecoration;
+import st.teamcataly.turistademanila.data.Feedback;
 import st.teamcataly.turistademanila.data.MapQueryResult;
 import st.teamcataly.turistademanila.data.POI;
 
@@ -127,5 +136,95 @@ public class TouristSpotsActivity extends AppCompatActivity implements MaterialS
         }
 
         onSearchConfirmed(searchQuery);
+    }
+
+    @Override
+    public void onItemLongClicked(POI poi) {
+
+    }
+
+    @Override
+    public void onFilterClicked(String filter) {
+        if (filter.equals("all")) {
+            controller.setPoiList(results);
+            controller.requestModelBuild();
+            return;
+        }
+        controller.setPoiList(new ArrayList<>());
+        controller.requestModelBuild();
+        if (filter.equals("top rated")) {
+            showTopRated();
+        } else {
+            showMostPopular();
+        }
+
+    }
+
+    private void showTopRated() {
+        Map<String, POI> poiMap = new HashMap<>();
+        Map<String, List<Float>> ratingsPerPlace = new HashMap<>();
+        DatabaseReference feedbacks = FirebaseApi.getInstance().getDatabase().getReference("feedbacks");
+        RxFirebaseDatabase.data(feedbacks).toObservable()
+                .map(DataSnapshot::getChildren) // list of all feedbacks for all users || feedback/
+                .flatMap(Observable::fromIterable)
+                .map(DataSnapshot::getChildren) // feedbackPerUser || feedback/{userId}
+                .flatMap(Observable::fromIterable)
+                .map(snapshot -> snapshot.getValue(Feedback.class))
+                .filter(feedback -> feedback.getPoi() != null)
+                .subscribe(feedback -> {
+                    poiMap.put(feedback.getPoi().getPlaceId(), feedback.getPoi());
+
+                    List<Float> listOfRating = ratingsPerPlace.get(feedback.getPoi().getPlaceId());
+                    if (listOfRating == null) {
+                        listOfRating = new ArrayList<>();
+                    }
+                    listOfRating.add(feedback.getRating());
+                    ratingsPerPlace.put(feedback.getPoi().getPlaceId(), listOfRating);
+
+                }, Crashlytics::logException, () -> {
+                    for (String key : poiMap.keySet()) {
+                        POI poi = poiMap.get(key);
+                        float rating = 0;
+                        if (ratingsPerPlace.get(key) != null && ratingsPerPlace.size() >= 1) {
+                            for (Float rate : ratingsPerPlace.get(key)) {
+                                rating += rate;
+                            }
+                            rating = rating / ratingsPerPlace.size();
+                        }
+                        poi.setRating(rating);
+                        poiMap.put(key, poi);
+                    }
+                    List<POI> sortedPoi = new ArrayList<>(poiMap.values());
+                    Collections.sort(sortedPoi, (lhs, rhs) ->
+                            Float.compare(rhs.getRating(), lhs.getRating()));
+                    controller.setPoiList(sortedPoi);
+                    controller.requestModelBuild();
+                });
+    }
+
+    private void showMostPopular() {
+        Map<String, POI> poiMap = new HashMap<>();
+        List<String> ids = new ArrayList<>();
+        DatabaseReference itineraries = FirebaseApi.getInstance().getDatabase().getReference("itinerary");
+        RxFirebaseDatabase.data(itineraries).toObservable()
+                .map(DataSnapshot::getChildren) // list of all itinerary for all users || itinerary/
+                .flatMap(Observable::fromIterable)
+                .map(DataSnapshot::getChildren) // itineraryPerUser || itinerary/{userId}
+                .flatMap(Observable::fromIterable)
+                .map(snapshot -> snapshot.getValue(POI.class))
+                .subscribe(poi -> {
+                    poiMap.put(poi.getPlaceId(), poi);
+                    ids.add(poi.getPlaceId());
+                }, Crashlytics::logException, () -> {
+                    for (String key : poiMap.keySet()) {
+                        POI poi = poiMap.get(key);
+                        poi.setWeight(Collections.frequency(ids, poi.getPlaceId()));
+                        poiMap.put(key, poi);
+                    }
+                    List<POI> sortedPoi = new ArrayList<>(poiMap.values());
+                    Collections.sort(sortedPoi, (lhs, rhs) -> Integer.compare(rhs.getWeight(), lhs.getWeight()));
+                    controller.setPoiList(sortedPoi);
+                    controller.requestModelBuild();
+                });
     }
 }

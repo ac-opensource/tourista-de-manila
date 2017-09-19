@@ -19,23 +19,28 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import st.teamcataly.turistademanila.R;
 import st.teamcataly.turistademanila.api.FirebaseApi;
 import st.teamcataly.turistademanila.data.Feedback;
 import st.teamcataly.turistademanila.data.POI;
+import st.teamcataly.turistademanila.data.UserProfile;
 import st.teamcataly.turistademanila.databinding.PlaceDetailsActivityBinding;
 
-public class PlaceDetailsActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class PlaceDetailsActivity extends AppCompatActivity implements OnMapReadyCallback, DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
 
     private GoogleMap mMap;
     private boolean isFromItinerary;
     private PlaceDetailsActivityBinding binding;
     private RatingAdapter ratingAdapter;
     public POI poi;
+    private Calendar plannedDate;
 
     public static void start(Context context, POI poi, boolean isFromItinerary) {
         Intent starter = new Intent(context, PlaceDetailsActivity.class);
@@ -66,7 +71,9 @@ public class PlaceDetailsActivity extends AppCompatActivity implements OnMapRead
             feedbackList.clear();
             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                 Feedback feedback = snapshot.getValue(Feedback.class);
-                feedbackList.add(feedback);
+                if (feedback != null) {
+                    feedbackList.add(feedback);
+                }
             }
             ratingAdapter.notifyDataSetChanged();
         });
@@ -111,20 +118,65 @@ public class PlaceDetailsActivity extends AppCompatActivity implements OnMapRead
                 Feedback feedback = new Feedback();
                 feedback.setComment(feedbackForm.getText().toString());
                 feedback.setRating(ratingBar.getRating());
-                feedbacks.child(FirebaseApi.getUser().getUid()).setValue(feedback).addOnCompleteListener(task -> {
-                    rateDialog.dismiss();
+                feedback.setPoi(poi);
+                feedback.setDate(System.currentTimeMillis());
+                DatabaseReference profile = FirebaseApi.getInstance().getDatabase().getReference("user_profile").child(FirebaseApi.getUser().getUid());
+                feedback.setUserId(FirebaseApi.getUser().getUid());
+                RxFirebaseDatabase.data(profile).subscribe(dataSnapshot -> {
+                    UserProfile userProfile = dataSnapshot.getValue(UserProfile.class);
+                    if (userProfile != null) {
+                        feedback.setDisplayName(userProfile.name);
+                    }
+                    feedbacks.child(FirebaseApi.getUser().getUid()).setValue(feedback).addOnCompleteListener(task -> {
+                        rateDialog.dismiss();
+                    });
                 });
+
             });
             //now that the dialog is set up, it's time to show it
             rateDialog.show();
         } else {
-            DatabaseReference myItinerary = FirebaseApi.getInstance().getDatabase().getReference("itinerary").child(FirebaseApi.getUser().getUid());
-            myItinerary.child(poi.getPlaceId()).setValue(poi).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    finish();
-                }
-            });
+            Calendar now = Calendar.getInstance();
+            plannedDate = Calendar.getInstance();
+            DatePickerDialog dpd = DatePickerDialog.newInstance(
+                    this,
+                    now.get(Calendar.YEAR),
+                    now.get(Calendar.MONTH),
+                    now.get(Calendar.DAY_OF_MONTH)
+            );
+            dpd.setVersion(DatePickerDialog.Version.VERSION_2);
+            dpd.show(getFragmentManager(), "dpd");
+
         }
 
+    }
+
+    @Override
+    public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+        plannedDate.set(Calendar.YEAR, year);
+        plannedDate.set(Calendar.MONTH, monthOfYear);
+        plannedDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        TimePickerDialog tpd = TimePickerDialog.newInstance(
+                this,
+                12,
+                0,
+                false
+        );
+        tpd.setVersion(TimePickerDialog.Version.VERSION_2);
+        tpd.show(getFragmentManager(), "tpd");
+    }
+
+    @Override
+    public void onTimeSet(TimePickerDialog view, int hourOfDay, int minute, int second) {
+        plannedDate.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        plannedDate.set(Calendar.MINUTE, minute);
+        plannedDate.set(Calendar.SECOND, second);
+        poi.setPlannedDate(plannedDate.getTimeInMillis());
+        DatabaseReference myItinerary = FirebaseApi.getInstance().getDatabase().getReference("itinerary").child(FirebaseApi.getUser().getUid());
+        myItinerary.child(poi.getPlaceId()).setValue(poi).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                finish();
+            }
+        });
     }
 }

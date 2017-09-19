@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.adroitandroid.chipcloud.ChipCloud;
 import com.adroitandroid.chipcloud.ChipListener;
@@ -14,41 +13,17 @@ import com.airbnb.epoxy.ModelView;
 import st.teamcataly.turistademanila.R;
 import st.teamcataly.turistademanila.touristspots.TouristSpotsController;
 
-@ModelView(defaultLayout = R.layout.header_view)
-public class HeaderView extends LinearLayout {
+@ModelView(defaultLayout = R.layout.filter_view)
+public class FilterView extends LinearLayout {
 
     private ChipCloud chipCloud;
-    private String[] categories = new String[]{
+    private String[] filter = new String[]{
             "all",
-            "airport",
-            "amusement_park",
-            "aquarium",
-            "art_gallery",
-            "atm",
-            "bank",
-            "bar",
-            "casino",
-            "church",
-            "embassy",
-            "establishment",
-            "food",
-            "hospital",
-            "lodging",
-            "mosque",
-            "museum",
-            "night_club",
-            "painter",
-            "park",
-            "restaurant",
-            "school",
-            "shopping_mall",
-            "stadium",
-            "store",
-            "university",
-            "zoo"
+            "most popular",
+            "top rated"
     };
 
-    public HeaderView(Context context, AttributeSet attrs) {
+    public FilterView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
@@ -57,8 +32,7 @@ public class HeaderView extends LinearLayout {
         setOrientation(VERTICAL);
         View view = inflate(getContext(), R.layout.tag_cloud, this);
         chipCloud = (ChipCloud) view.findViewById(R.id.chipCloud);
-        ((TextView) view.findViewById(R.id.title)).setText("Category");
-        chipCloud.addChips(categories);
+        chipCloud.addChips(filter);
     }
 
     @ModelProp(options = ModelProp.Option.DoNotHash)
@@ -67,7 +41,7 @@ public class HeaderView extends LinearLayout {
             @Override
             public void chipSelected(int i) {
                 if (adapterCallbacks != null) {
-                    adapterCallbacks.onChipClicked(categories[i]);
+                    adapterCallbacks.onFilterClicked(filter[i]);
                 }
             }
 

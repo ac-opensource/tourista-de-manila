@@ -25,6 +25,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.firebase.auth.FirebaseAuth;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import st.teamcataly.turistademanila.R;
 import st.teamcataly.turistademanila.itinarary.MyItineraryActivity;
 import st.teamcataly.turistademanila.login.LoginActivity;
@@ -90,6 +91,14 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            SweetAlertDialog pDialog = new SweetAlertDialog(this, SweetAlertDialog.NORMAL_TYPE)
+                    .setTitleText("How to Use")
+                    .setContentText("1. Use the floating action button to add a place to your itnerary.\n " +
+                            "2. Use the menu on the upper left to go to Tourist Spots, Itinerary, and Profile.\n " +
+                            "\n" +
+                            "In Tourist Spots, you can search for the places you want to be in your itnerary.\n " +
+                            "In Itinerary, these are items that you saved from Tourist Spots");
+            pDialog.show();
             return true;
         }
 

@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import java.util.Date;
 import java.util.List;
 
 import st.teamcataly.turistademanila.R;
@@ -46,6 +47,14 @@ public class RatingAdapter extends PagerAdapter {
         TextView textView = (TextView) layout.findViewById(R.id.rate_title);
         textView.setVisibility(View.GONE);
         EditText feedbackForm = (EditText) layout.findViewById(R.id.feedback);
+        TextView displayName = (TextView) layout.findViewById(R.id.userDisplayName);
+        TextView date = (TextView) layout.findViewById(R.id.date);
+        displayName.setVisibility(View.VISIBLE);
+        if (feedbacks.get(position).getDate() != null) {
+            date.setVisibility(View.VISIBLE);
+            date.setText(new Date(feedbacks.get(position).getDate()).toString());
+        }
+        displayName.setText(feedbacks.get(position).getDisplayName());
         feedbackForm.setEnabled(false);
         feedbackForm.setFocusable(false);
         feedbackForm.setText(feedbacks.get(position).getComment());

@@ -14,41 +14,16 @@ import com.airbnb.epoxy.ModelView;
 import st.teamcataly.turistademanila.R;
 import st.teamcataly.turistademanila.touristspots.TouristSpotsController;
 
-@ModelView(defaultLayout = R.layout.header_view)
-public class HeaderView extends LinearLayout {
+@ModelView(defaultLayout = R.layout.report_view)
+public class ReportView extends LinearLayout {
 
     private ChipCloud chipCloud;
-    private String[] categories = new String[]{
-            "all",
-            "airport",
-            "amusement_park",
-            "aquarium",
-            "art_gallery",
-            "atm",
-            "bank",
-            "bar",
-            "casino",
-            "church",
-            "embassy",
-            "establishment",
-            "food",
-            "hospital",
-            "lodging",
-            "mosque",
-            "museum",
-            "night_club",
-            "painter",
-            "park",
-            "restaurant",
-            "school",
-            "shopping_mall",
-            "stadium",
-            "store",
-            "university",
-            "zoo"
+    private String[] filter = new String[]{
+            "on going",
+            "travel report"
     };
 
-    public HeaderView(Context context, AttributeSet attrs) {
+    public ReportView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
@@ -57,8 +32,8 @@ public class HeaderView extends LinearLayout {
         setOrientation(VERTICAL);
         View view = inflate(getContext(), R.layout.tag_cloud, this);
         chipCloud = (ChipCloud) view.findViewById(R.id.chipCloud);
-        ((TextView) view.findViewById(R.id.title)).setText("Category");
-        chipCloud.addChips(categories);
+        ((TextView) view.findViewById(R.id.title)).setText("View Type");
+        chipCloud.addChips(filter);
     }
 
     @ModelProp(options = ModelProp.Option.DoNotHash)
@@ -67,7 +42,7 @@ public class HeaderView extends LinearLayout {
             @Override
             public void chipSelected(int i) {
                 if (adapterCallbacks != null) {
-                    adapterCallbacks.onChipClicked(categories[i]);
+                    adapterCallbacks.onChipClicked(filter[i]);
                 }
             }
 

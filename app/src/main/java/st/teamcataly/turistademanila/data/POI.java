@@ -19,6 +19,7 @@ public class POI implements Serializable {
     @Json(name = "place_id") private String placeId;
     private List<String> types;
     private int weight;
+    private long plannedDate;
 
     public Geometry getGeometry() {
         return geometry;
@@ -82,5 +83,13 @@ public class POI implements Serializable {
 
     public void setTypes(List<String> types) {
         this.types = types;
+    }
+
+    public long getPlannedDate() {
+        return plannedDate;
+    }
+
+    public void setPlannedDate(long plannedDate) {
+        this.plannedDate = plannedDate;
     }
 }
